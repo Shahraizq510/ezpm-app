@@ -5,7 +5,8 @@ import { demo } from "@/lib/mockData";
 import { money, pct, timeAgo } from "@/lib/ui";
 
 export default function LandlordDashboardPage() {
-  const k = demo.kpis;
+  const k = demo.getKpis();
+  const cards = demo.getUnitCards();
 
   return (
     <div className="grid gap-6">
@@ -13,9 +14,9 @@ export default function LandlordDashboardPage() {
 
       {/* KPIs */}
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Total Monthly Rent" value={money(k.totalMonthlyRent)} note="Across active leases" />
-        <KpiCard label="Collected This Month" value={money(k.collectedThisMonth)} note="ACH • deposits in progress" />
-        <KpiCard label="Outstanding Balance" value={money(k.outstandingBalance)} note="Due + late combined" />
+        <KpiCard label="Total Monthly Rent" value={money(k.totalMonthlyRent)} note="Monthly equivalent" />
+        <KpiCard label="Collected This Month" value={money(k.collectedThisMonth)} note="Based on payments ledger" />
+        <KpiCard label="Outstanding Balance" value={money(k.outstandingBalance)} note="Due + late (simple)" />
         <KpiCard label="Occupancy Rate" value={pct(k.occupancyRate)} note="Occupied units" />
       </section>
 
@@ -27,20 +28,21 @@ export default function LandlordDashboardPage() {
               <div className="text-xs uppercase tracking-[0.18em] text-white/55 font-semibold">Units & Status</div>
               <div className="mt-1 text-base font-extrabold">What needs attention</div>
             </div>
-            <div className="text-sm text-white/60">This month</div>
+            <div className="text-sm text-white/60">As of today</div>
           </div>
 
           <div className="p-3 grid gap-2">
-            {demo.units.map((u) => (
+            {cards.map((u) => (
               <div
-                key={u.id}
+                key={u.unitId}
                 className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-4 py-3"
               >
                 <div className="min-w-0">
                   <div className="font-bold">Unit {u.label}</div>
                   <div className="text-sm text-white/60 truncate">
-                    {u.tenantName ?? "Vacant"} • {money(u.rent)} / mo
+                    {u.tenantName ?? "Vacant"} • {u.rent ? `${money(u.rent)} / ${u.cadence}` : "No rent set"}
                   </div>
+                  <div className="mt-1 text-xs text-white/55">{u.note}</div>
                 </div>
                 <StatusPill status={u.status} />
               </div>

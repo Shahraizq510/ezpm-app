@@ -3,14 +3,15 @@ import { demo } from "@/lib/mockData";
 import { money } from "@/lib/ui";
 
 export default function TenantsPage() {
-  const tenants = demo.units
-    .filter((u) => u.tenantName)
-    .map((u) => ({
-      name: u.tenantName!,
-      unit: u.label,
-      rent: u.rent,
-      status: u.status,
-    }));
+  const rows = demo.leases.map((l) => {
+    const unit = demo.units.find((u) => u.id === l.unitId);
+    return {
+      name: l.tenantName,
+      unit: unit?.label ?? "—",
+      rent: l.rent,
+      cadence: l.cadence,
+    };
+  });
 
   return (
     <div className="grid gap-6">
@@ -27,15 +28,15 @@ export default function TenantsPage() {
             <div>Name</div>
             <div>Unit</div>
             <div>Rent</div>
-            <div>Status</div>
+            <div>Cadence</div>
           </div>
 
-          {tenants.map((t) => (
+          {rows.map((t) => (
             <div key={t.name + t.unit} className="grid grid-cols-4 gap-3 px-5 py-3">
               <div className="font-semibold">{t.name}</div>
               <div className="text-white/75">{t.unit}</div>
               <div className="text-white/75">{money(t.rent)}</div>
-              <div className="text-white/75">{t.status}</div>
+              <div className="text-white/75">{t.cadence}</div>
             </div>
           ))}
         </div>
