@@ -14,6 +14,7 @@ export type ExpenseCategory =
 export type Expense = {
   id: string;
   propertyId: string;
+  unitId?: string; // optional — if set, expense is unit-specific
   category: ExpenseCategory;
   description: string;
   amount: number;
@@ -273,7 +274,7 @@ export const demo = {
     { id: "exp_util_2026_03", propertyId: "p_woolsey", category: "Utilities", description: "Common area electric + water", amount: 200, date: "2026-03-15T00:00:00Z", recurring: true },
 
     // One-off repairs
-    { id: "exp_repair_1", propertyId: "p_woolsey", category: "Repairs", description: "Plumbing fix — unit 1532A kitchen drain", amount: 450, date: "2025-11-20T00:00:00Z", recurring: false, receiptUrl: "/receipts/plumbing-1532a.pdf" },
+    { id: "exp_repair_1", propertyId: "p_woolsey", unitId: "u_1532a", category: "Repairs", description: "Plumbing fix — unit 1532A kitchen drain", amount: 450, date: "2025-11-20T00:00:00Z", recurring: false, receiptUrl: "/receipts/plumbing-1532a.pdf" },
     { id: "exp_repair_2", propertyId: "p_woolsey", category: "Repairs", description: "Replace smoke detectors (all units)", amount: 120, date: "2026-01-14T00:00:00Z", recurring: false, receiptUrl: "/receipts/smoke-detectors.pdf" },
     { id: "exp_repair_3", propertyId: "p_woolsey", category: "Repairs", description: "Exterior paint touch-up", amount: 680, date: "2026-03-08T00:00:00Z", recurring: false },
 
@@ -475,6 +476,51 @@ export const demo = {
         totalExpenses,
         netIncome: totalRevenue - totalExpenses,
       },
+    };
+  },
+
+  getUnitById(unitId: string) {
+    return this.units.find(u => u.id === unitId);
+  },
+
+  getLeaseByUnit(unitId: string) {
+    return this.leases.find(l => l.unitId === unitId);
+  },
+
+  getPaymentsByUnit(unitId: string) {
+    const lease = this.getLeaseByUnit(unitId);
+    if (!lease) return [];
+    return this.payments.filter(p => p.leaseId === lease.id);
+  },
+
+  getExpensesByUnit(unitId: string) {
+    return this.expenses.filter(e => e.unitId === unitId);
+  },
+
+  getDocumentsByUnit(unitId: string) {
+    // Match docs that have the unit label in their name (e.g. "Anna Wolfe lease agreement")
+    const unit = this.getUnitById(unitId);
+    const lease = this.getLeaseByUnit(unitId);
+    if (!unit) return [];
+    const terms = [unit.label.toLowerCase()];
+    if (lease) terms.push(lease.tenantName.split(" ")[0].toLowerCase());
+    return this.documents.filter(d => {
+      const name = d.name.toLowerCase();
+      return terms.some(t => name.includes(t));
+    });
+  },
+
+  getUnitRevenue(unitId: string) {
+    const payments = this.getPaymentsByUnit(unitId);
+    const unitExpenses = this.getExpensesByUnit(unitId);
+    const totalRevenue = payments.reduce((s, p) => s + p.amount, 0);
+    const totalExpenses = unitExpenses.reduce((s, e) => s + e.amount, 0);
+    return {
+      payments,
+      totalRevenue,
+      expenses: unitExpenses,
+      totalExpenses,
+      netIncome: totalRevenue - totalExpenses,
     };
   },
 };

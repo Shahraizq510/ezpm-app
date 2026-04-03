@@ -45,13 +45,10 @@ export default function LandlordDashboardPage() {
 
           <div className="p-3 grid gap-2">
             {cards.map((u) => {
-              const unit = demo.units.find((x) => x.id === u.unitId);
-              const property = unit ? demo.properties.find((p) => p.id === unit.propertyId) : undefined;
-              const slug = property ? demo.getPropertySlug(property) : "";
               return (
                 <Link
                   key={u.unitId}
-                  href={`/app/landlord/properties/${slug}`}
+                  href={`/app/landlord/units/${u.unitId}`}
                   className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-4 py-3 hover:bg-white/[0.08] transition"
                 >
                   <div className="min-w-0">
