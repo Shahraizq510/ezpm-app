@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { TopBar } from "@/components/TopBar";
 import { KpiCard } from "@/components/KpiCard";
 import { StatusPill } from "@/components/StatusPill";
@@ -43,21 +44,27 @@ export default function LandlordDashboardPage() {
           </div>
 
           <div className="p-3 grid gap-2">
-            {cards.map((u) => (
-              <div
-                key={u.unitId}
-                className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-4 py-3"
-              >
-                <div className="min-w-0">
-                  <div className="font-bold">Unit {u.label}</div>
-                  <div className="text-sm text-white/60 truncate">
-                    {u.tenantName ?? "Vacant"} • {u.rent ? `${money(u.rent)} / ${u.cadence}` : "No rent set"}
+            {cards.map((u) => {
+              const unit = demo.units.find((x) => x.id === u.unitId);
+              const property = unit ? demo.properties.find((p) => p.id === unit.propertyId) : undefined;
+              const slug = property ? demo.getPropertySlug(property) : "";
+              return (
+                <Link
+                  key={u.unitId}
+                  href={`/app/landlord/properties/${slug}`}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-4 py-3 hover:bg-white/[0.08] transition"
+                >
+                  <div className="min-w-0">
+                    <div className="font-bold">Unit {u.label}</div>
+                    <div className="text-sm text-white/60 truncate">
+                      {u.tenantName ?? "Vacant"} • {u.rent ? `${money(u.rent)} / ${u.cadence}` : "No rent set"}
+                    </div>
+                    <div className="mt-1 text-xs text-white/55">{u.note}</div>
                   </div>
-                  <div className="mt-1 text-xs text-white/55">{u.note}</div>
-                </div>
-                <StatusPill status={u.status} />
-              </div>
-            ))}
+                  <StatusPill status={u.status} />
+                </Link>
+              );
+            })}
           </div>
         </div>
 
