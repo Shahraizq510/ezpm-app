@@ -7,6 +7,12 @@ import { demo } from "@/lib/mockData";
 import type { DocCategory, PropertyDocument } from "@/lib/mockData";
 import { money, fileSize } from "@/lib/ui";
 
+function ordinal(n: number) {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
 type Tab = "overview" | "payments" | "expenses" | "documents";
 
 const tabs: { key: Tab; label: string }[] = [
@@ -157,7 +163,7 @@ export default function UnitDetailPage({
                 </div>
                 <div>
                   <div className="text-xs text-white/50">Due Day</div>
-                  <div className="font-bold">{lease.dueDay}th of each month</div>
+                  <div className="font-bold">{ordinal(lease.dueDay)} of each month</div>
                 </div>
               </div>
             ) : invite ? (
