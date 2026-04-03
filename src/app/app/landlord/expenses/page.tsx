@@ -1,6 +1,9 @@
+"use client";
+
+import { useState, useRef } from "react";
 import { TopBar } from "@/components/TopBar";
-import { demo } from "@/lib/mockData";
-import { money } from "@/lib/ui";
+import { demo, type Expense } from "@/lib/mockData";
+import { money, fileSize } from "@/lib/ui";
 
 const categoryColors: Record<string, string> = {
   Mortgage: "bg-blue-500/20 text-blue-300",
@@ -13,24 +16,23 @@ const categoryColors: Record<string, string> = {
   Other: "bg-white/10 text-white/70",
 };
 
-export default function ExpensesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ property?: string }>;
-}) {
-  // Next.js 16 makes searchParams a promise but we can still access synchronously in server components
-  // by wrapping — but for simplicity, let's just use a default approach
-  return <ExpensesContent />;
-}
+export default function ExpensesPage() {
+  const [attachedIds, setAttachedIds] = useState<Set<string>>(() => {
+    // Pre-mark expenses that already have receipts
+    const ids = new Set<string>();
+    demo.getExpenses().forEach((e) => {
+      if (e.receiptUrl) ids.add(e.id);
+    });
+    return ids;
+  });
+  const [attachingId, setAttachingId] = useState<string | null>(null);
+  const [propertyFilter, setPropertyFilter] = useState("all");
 
-function ExpensesContent() {
   const allExpenses = demo.getExpenses();
   const properties = demo.properties;
 
-  // Show all by default (no client-side filter needed — server rendered with all)
-  const expenses = allExpenses.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  const expenses = (propertyFilter === "all" ? allExpenses : allExpenses.filter((e) => e.propertyId === propertyFilter))
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
 
@@ -46,7 +48,7 @@ function ExpensesContent() {
           </div>
           <div className="mt-1 text-2xl font-extrabold">{money(totalExpenses)}</div>
           <div className="text-xs text-white/50 mt-1">
-            {expenses.length} transactions • All properties
+            {expenses.length} transactions • {propertyFilter === "all" ? "All properties" : properties.find((p) => p.id === propertyFilter)?.name}
           </div>
         </div>
 
@@ -57,16 +59,24 @@ function ExpensesContent() {
 
       {/* Property filter pills */}
       <div className="flex gap-2 flex-wrap">
-        <div className="rounded-xl bg-white/10 border border-white/20 px-3 py-1.5 text-sm font-semibold">
+        <button
+          onClick={() => setPropertyFilter("all")}
+          className={`rounded-xl px-3 py-1.5 text-sm font-semibold transition ${
+            propertyFilter === "all" ? "bg-white/10 border border-white/20" : "bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10"
+          }`}
+        >
           All Properties
-        </div>
+        </button>
         {properties.map((p) => (
-          <div
+          <button
             key={p.id}
-            className="rounded-xl bg-white/5 border border-white/10 px-3 py-1.5 text-sm text-white/60 hover:text-white hover:bg-white/10 transition cursor-pointer"
+            onClick={() => setPropertyFilter(p.id)}
+            className={`rounded-xl px-3 py-1.5 text-sm font-semibold transition ${
+              propertyFilter === p.id ? "bg-white/10 border border-white/20" : "bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10"
+            }`}
           >
             {p.name}
-          </div>
+          </button>
         ))}
       </div>
 
@@ -74,6 +84,7 @@ function ExpensesContent() {
       <div className="grid gap-2">
         {expenses.map((e) => {
           const prop = properties.find((p) => p.id === e.propertyId);
+          const hasReceipt = attachedIds.has(e.id);
           return (
             <div
               key={e.id}
@@ -90,26 +101,117 @@ function ExpensesContent() {
                 <div className="min-w-0">
                   <div className="font-bold truncate">
                     {e.description}
-                    {e.receiptUrl && (
+                    {hasReceipt && (
                       <span className="ml-2 text-white/40" title="Receipt attached">
                         📎
                       </span>
                     )}
                   </div>
                   <div className="text-xs text-white/50">
-                    {prop?.name} • {new Date(e.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    {prop?.name} •{" "}
+                    {new Date(e.date).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
                     {e.recurring && (
                       <span className="ml-2 text-blue-400/70">↻ Recurring</span>
                     )}
                   </div>
                 </div>
               </div>
-              <div className="text-right shrink-0">
-                <div className="font-extrabold">{money(e.amount)}</div>
+              <div className="flex items-center gap-3 shrink-0">
+                {hasReceipt ? (
+                  <span className="text-green-400 text-sm" title="Receipt attached">✅</span>
+                ) : (
+                  <button
+                    onClick={() => setAttachingId(e.id)}
+                    className="rounded-lg bg-white/5 border border-white/10 px-2 py-1.5 text-sm hover:bg-white/10 transition"
+                    title="Attach receipt"
+                  >
+                    📎
+                  </button>
+                )}
+                <div className="text-right">
+                  <div className="font-extrabold">{money(e.amount)}</div>
+                </div>
               </div>
             </div>
           );
         })}
+      </div>
+
+      {/* Mini attach modal */}
+      {attachingId && (
+        <AttachModal
+          expense={allExpenses.find((e) => e.id === attachingId)!}
+          onClose={() => setAttachingId(null)}
+          onAttach={() => {
+            setAttachedIds((prev) => new Set(prev).add(attachingId));
+            setAttachingId(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function AttachModal({ expense, onClose, onAttach }: { expense: Expense; onClose: () => void; onAttach: () => void }) {
+  const [file, setFile] = useState<File | null>(null);
+  const [success, setSuccess] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const prop = demo.properties.find((p) => p.id === expense.propertyId);
+
+  const handleAttach = () => {
+    setSuccess(true);
+    setTimeout(onAttach, 600);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0a0a0f] p-6 grid gap-4" onClick={(e) => e.stopPropagation()}>
+        {success ? (
+          <div className="text-center py-6">
+            <div className="text-4xl mb-2">✅</div>
+            <div className="font-bold text-sm">Receipt attached!</div>
+          </div>
+        ) : (
+          <>
+            <h2 className="text-lg font-extrabold">Attach Receipt</h2>
+            <div className="text-xs text-white/50">
+              {expense.description} • {prop?.name} • Receipt
+            </div>
+
+            <input ref={fileRef} type="file" className="hidden" onChange={(e) => { if (e.target.files?.[0]) setFile(e.target.files[0]); }} />
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="rounded-xl border border-dashed border-white/20 bg-white/[0.02] hover:border-white/30 hover:bg-white/[0.04] px-4 py-6 text-center transition"
+            >
+              {file ? (
+                <div>
+                  <div className="font-semibold text-sm">📄 {file.name}</div>
+                  <div className="text-xs text-white/40">{fileSize(file.size)}</div>
+                </div>
+              ) : (
+                <div className="text-sm text-white/50">Click to select file</div>
+              )}
+            </button>
+
+            <div className="flex justify-end gap-3">
+              <button onClick={onClose} className="rounded-xl bg-white/5 border border-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/10 transition">
+                Cancel
+              </button>
+              <button
+                onClick={handleAttach}
+                disabled={!file}
+                className="rounded-xl bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2 text-sm font-extrabold hover:from-blue-400 hover:to-violet-400 transition disabled:opacity-40"
+              >
+                Attach
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

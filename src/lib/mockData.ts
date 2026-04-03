@@ -75,6 +75,22 @@ export type TenantInvite = {
   sentAt: string; // ISO
 };
 
+export type DocCategory =
+  | "Bill" | "Invoice" | "Receipt" | "Insurance"
+  | "Tax" | "Permit" | "Inspection" | "Lease" | "Other";
+
+export type PropertyDocument = {
+  id: string;
+  propertyId: string;
+  category: DocCategory;
+  name: string;
+  description?: string;
+  uploadedAt: string;
+  fileType: string;
+  fileSize: number;
+  url?: string;
+};
+
 export const asOf = new Date("2026-03-29T12:00:00Z");
 
 function toISO(d: Date) {
@@ -367,6 +383,29 @@ export const demo = {
 
   getVacantUnits() {
     return this.units.filter((u) => !this.leases.some((l) => l.unitId === u.id));
+  },
+
+  documents: [
+    { id: "doc_1", propertyId: "p_woolsey", category: "Bill", name: "Water bill — Jan 2026", description: "Monthly water service", uploadedAt: "2026-01-18T10:00:00Z", fileType: "pdf", fileSize: 250880, url: "/docs/water-jan-2026.pdf" },
+    { id: "doc_2", propertyId: "p_woolsey", category: "Bill", name: "PG&E electric bill — Feb 2026", description: "Electric service for all units", uploadedAt: "2026-02-20T14:30:00Z", fileType: "pdf", fileSize: 193536, url: "/docs/pge-feb-2026.pdf" },
+    { id: "doc_3", propertyId: "p_woolsey", category: "Invoice", name: "Bay Area Plumbing — repair invoice", description: "Kitchen drain repair, unit 1532A ($450)", uploadedAt: "2025-11-22T09:15:00Z", fileType: "pdf", fileSize: 319488, url: "/docs/plumbing-invoice.pdf" },
+    { id: "doc_4", propertyId: "p_woolsey", category: "Insurance", name: "Property insurance certificate", description: "Annual policy — State Farm", uploadedAt: "2025-10-01T08:00:00Z", fileType: "pdf", fileSize: 1258291, url: "/docs/insurance-cert.pdf" },
+    { id: "doc_5", propertyId: "p_woolsey", category: "Tax", name: "Property tax statement Q1 2026", description: "Alameda County", uploadedAt: "2026-01-05T11:00:00Z", fileType: "pdf", fileSize: 580608, url: "/docs/tax-q1-2026.pdf" },
+    { id: "doc_6", propertyId: "p_woolsey", category: "Inspection", name: "Roof inspection report", description: "Annual roof condition assessment", uploadedAt: "2026-02-10T16:00:00Z", fileType: "pdf", fileSize: 911360, url: "/docs/roof-inspection.pdf" },
+    { id: "doc_7", propertyId: "p_woolsey", category: "Lease", name: "Anna Wolfe — lease agreement", description: "Unit 1532A, starts Feb 2026", uploadedAt: "2026-01-28T13:45:00Z", fileType: "pdf", fileSize: 2202009, url: "/docs/lease-anna-wolfe.pdf" },
+    { id: "doc_8", propertyId: "p_woolsey", category: "Lease", name: "YanYan Wang — lease agreement", description: "Unit 1532, starts Jun 2024", uploadedAt: "2024-05-20T10:30:00Z", fileType: "pdf", fileSize: 1887436, url: "/docs/lease-yanyan-wang.pdf" },
+  ] satisfies PropertyDocument[],
+
+  getDocuments() {
+    return this.documents;
+  },
+
+  getDocumentsByProperty(propertyId: string) {
+    return this.documents.filter((d) => d.propertyId === propertyId);
+  },
+
+  getDocumentsByCategory(category: DocCategory) {
+    return this.documents.filter((d) => d.category === category);
   },
 
   getPnL() {

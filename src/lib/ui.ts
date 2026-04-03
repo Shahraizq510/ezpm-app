@@ -10,6 +10,12 @@ export function pct(n: number) {
   return `${Math.round(n * 100)}%`;
 }
 
+export function fileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export function timeAgo(iso: string) {
   const d = new Date(iso).getTime();
   const s = Math.max(1, Math.floor((Date.now() - d) / 1000));
