@@ -1,6 +1,27 @@
 export type UnitStatus = "Paid" | "Due" | "Late" | "Vacant";
 export type Cadence = "monthly" | "quarterly";
 
+export type ExpenseCategory =
+  | "Mortgage"
+  | "Insurance"
+  | "Repairs"
+  | "Utilities"
+  | "Property Tax"
+  | "HOA"
+  | "Management"
+  | "Other";
+
+export type Expense = {
+  id: string;
+  propertyId: string;
+  category: ExpenseCategory;
+  description: string;
+  amount: number;
+  date: string; // ISO
+  recurring: boolean;
+  receiptUrl?: string;
+};
+
 export type Property = {
   id: string;
   name: string;
@@ -189,6 +210,50 @@ export const demo = {
     },
   ] satisfies ActivityEvent[],
 
+  expenses: [
+    // Mortgage — recurring monthly
+    { id: "exp_mort_2025_10", propertyId: "p_woolsey", category: "Mortgage", description: "Mortgage payment — Oct 2025", amount: 2800, date: "2025-10-01T00:00:00Z", recurring: true },
+    { id: "exp_mort_2025_11", propertyId: "p_woolsey", category: "Mortgage", description: "Mortgage payment — Nov 2025", amount: 2800, date: "2025-11-01T00:00:00Z", recurring: true },
+    { id: "exp_mort_2025_12", propertyId: "p_woolsey", category: "Mortgage", description: "Mortgage payment — Dec 2025", amount: 2800, date: "2025-12-01T00:00:00Z", recurring: true },
+    { id: "exp_mort_2026_01", propertyId: "p_woolsey", category: "Mortgage", description: "Mortgage payment — Jan 2026", amount: 2800, date: "2026-01-01T00:00:00Z", recurring: true },
+    { id: "exp_mort_2026_02", propertyId: "p_woolsey", category: "Mortgage", description: "Mortgage payment — Feb 2026", amount: 2800, date: "2026-02-01T00:00:00Z", recurring: true },
+    { id: "exp_mort_2026_03", propertyId: "p_woolsey", category: "Mortgage", description: "Mortgage payment — Mar 2026", amount: 2800, date: "2026-03-01T00:00:00Z", recurring: true },
+
+    // Insurance — recurring monthly
+    { id: "exp_ins_2025_10", propertyId: "p_woolsey", category: "Insurance", description: "Property insurance premium", amount: 150, date: "2025-10-05T00:00:00Z", recurring: true },
+    { id: "exp_ins_2025_11", propertyId: "p_woolsey", category: "Insurance", description: "Property insurance premium", amount: 150, date: "2025-11-05T00:00:00Z", recurring: true },
+    { id: "exp_ins_2025_12", propertyId: "p_woolsey", category: "Insurance", description: "Property insurance premium", amount: 150, date: "2025-12-05T00:00:00Z", recurring: true },
+    { id: "exp_ins_2026_01", propertyId: "p_woolsey", category: "Insurance", description: "Property insurance premium", amount: 150, date: "2026-01-05T00:00:00Z", recurring: true },
+    { id: "exp_ins_2026_02", propertyId: "p_woolsey", category: "Insurance", description: "Property insurance premium", amount: 150, date: "2026-02-05T00:00:00Z", recurring: true },
+    { id: "exp_ins_2026_03", propertyId: "p_woolsey", category: "Insurance", description: "Property insurance premium", amount: 150, date: "2026-03-05T00:00:00Z", recurring: true },
+
+    // Property Tax — recurring monthly
+    { id: "exp_tax_2025_10", propertyId: "p_woolsey", category: "Property Tax", description: "Property tax escrow", amount: 400, date: "2025-10-10T00:00:00Z", recurring: true },
+    { id: "exp_tax_2025_11", propertyId: "p_woolsey", category: "Property Tax", description: "Property tax escrow", amount: 400, date: "2025-11-10T00:00:00Z", recurring: true },
+    { id: "exp_tax_2025_12", propertyId: "p_woolsey", category: "Property Tax", description: "Property tax escrow", amount: 400, date: "2025-12-10T00:00:00Z", recurring: true },
+    { id: "exp_tax_2026_01", propertyId: "p_woolsey", category: "Property Tax", description: "Property tax escrow", amount: 400, date: "2026-01-10T00:00:00Z", recurring: true },
+    { id: "exp_tax_2026_02", propertyId: "p_woolsey", category: "Property Tax", description: "Property tax escrow", amount: 400, date: "2026-02-10T00:00:00Z", recurring: true },
+    { id: "exp_tax_2026_03", propertyId: "p_woolsey", category: "Property Tax", description: "Property tax escrow", amount: 400, date: "2026-03-10T00:00:00Z", recurring: true },
+
+    // Utilities — recurring monthly (common areas)
+    { id: "exp_util_2025_10", propertyId: "p_woolsey", category: "Utilities", description: "Common area electric + water", amount: 195, date: "2025-10-15T00:00:00Z", recurring: true },
+    { id: "exp_util_2025_11", propertyId: "p_woolsey", category: "Utilities", description: "Common area electric + water", amount: 210, date: "2025-11-15T00:00:00Z", recurring: true },
+    { id: "exp_util_2025_12", propertyId: "p_woolsey", category: "Utilities", description: "Common area electric + water", amount: 230, date: "2025-12-15T00:00:00Z", recurring: true },
+    { id: "exp_util_2026_01", propertyId: "p_woolsey", category: "Utilities", description: "Common area electric + water", amount: 205, date: "2026-01-15T00:00:00Z", recurring: true },
+    { id: "exp_util_2026_02", propertyId: "p_woolsey", category: "Utilities", description: "Common area electric + water", amount: 190, date: "2026-02-15T00:00:00Z", recurring: true },
+    { id: "exp_util_2026_03", propertyId: "p_woolsey", category: "Utilities", description: "Common area electric + water", amount: 200, date: "2026-03-15T00:00:00Z", recurring: true },
+
+    // One-off repairs
+    { id: "exp_repair_1", propertyId: "p_woolsey", category: "Repairs", description: "Plumbing fix — unit 1532A kitchen drain", amount: 450, date: "2025-11-20T00:00:00Z", recurring: false, receiptUrl: "/receipts/plumbing-1532a.pdf" },
+    { id: "exp_repair_2", propertyId: "p_woolsey", category: "Repairs", description: "Replace smoke detectors (all units)", amount: 120, date: "2026-01-14T00:00:00Z", recurring: false, receiptUrl: "/receipts/smoke-detectors.pdf" },
+    { id: "exp_repair_3", propertyId: "p_woolsey", category: "Repairs", description: "Exterior paint touch-up", amount: 680, date: "2026-03-08T00:00:00Z", recurring: false },
+
+    // Management
+    { id: "exp_mgmt_2026_01", propertyId: "p_woolsey", category: "Management", description: "Property management software (EZPM Pro)", amount: 29, date: "2026-01-01T00:00:00Z", recurring: true },
+    { id: "exp_mgmt_2026_02", propertyId: "p_woolsey", category: "Management", description: "Property management software (EZPM Pro)", amount: 29, date: "2026-02-01T00:00:00Z", recurring: true },
+    { id: "exp_mgmt_2026_03", propertyId: "p_woolsey", category: "Management", description: "Property management software (EZPM Pro)", amount: 29, date: "2026-03-01T00:00:00Z", recurring: true },
+  ] satisfies Expense[],
+
   // Derived views
   getUnitCards() {
     const cards = this.units.map((u) => {
@@ -261,5 +326,50 @@ export const demo = {
     const occupancyRate = active.length / cards.length;
 
     return { totalMonthlyRent, collectedThisMonth, outstandingBalance, occupancyRate };
+  },
+
+  getExpenses() {
+    return this.expenses;
+  },
+
+  getExpensesByProperty(propertyId: string) {
+    return this.expenses.filter((e) => e.propertyId === propertyId);
+  },
+
+  getPnL() {
+    const totalRevenue = this.payments.reduce((s, p) => s + p.amount, 0);
+    const totalExpenses = this.expenses.reduce((s, e) => s + e.amount, 0);
+
+    const perProperty = this.properties.map((prop) => {
+      // Revenue: sum payments for leases on units in this property
+      const propUnits = this.units.filter((u) => u.propertyId === prop.id);
+      const propLeaseIds = this.leases
+        .filter((l) => propUnits.some((u) => u.id === l.unitId))
+        .map((l) => l.id);
+      const propRevenue = this.payments
+        .filter((p) => propLeaseIds.includes(p.leaseId))
+        .reduce((s, p) => s + p.amount, 0);
+
+      const propExpenses = this.expenses
+        .filter((e) => e.propertyId === prop.id)
+        .reduce((s, e) => s + e.amount, 0);
+
+      return {
+        propertyId: prop.id,
+        propertyName: prop.name,
+        totalRevenue: propRevenue,
+        totalExpenses: propExpenses,
+        netIncome: propRevenue - propExpenses,
+      };
+    });
+
+    return {
+      perProperty,
+      totals: {
+        totalRevenue,
+        totalExpenses,
+        netIncome: totalRevenue - totalExpenses,
+      },
+    };
   },
 };

@@ -7,6 +7,7 @@ const nav = [
   { href: "/app/landlord/applications", label: "Applications" },
   { href: "/app/landlord/leases", label: "Leases" },
   { href: "/app/landlord/payments", label: "Payments" },
+  { href: "/app/landlord/expenses", label: "Expenses" },
   { href: "/app/landlord/maintenance", label: "Maintenance" },
   { href: "/app/landlord/reports", label: "Reports" },
   { href: "/app/landlord/settings", label: "Settings" },

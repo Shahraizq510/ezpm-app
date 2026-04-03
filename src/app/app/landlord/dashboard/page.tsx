@@ -7,17 +7,19 @@ import { money, pct, timeAgo } from "@/lib/ui";
 export default function LandlordDashboardPage() {
   const k = demo.getKpis();
   const cards = demo.getUnitCards();
+  const pnl = demo.getPnL();
 
   return (
     <div className="grid gap-6">
       <TopBar title="Dashboard" />
 
       {/* KPIs */}
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <KpiCard label="Total Monthly Rent" value={money(k.totalMonthlyRent)} note="Monthly equivalent" />
         <KpiCard label="Collected This Month" value={money(k.collectedThisMonth)} note="Based on payments ledger" />
         <KpiCard label="Outstanding Balance" value={money(k.outstandingBalance)} note="Due + late (simple)" />
         <KpiCard label="Occupancy Rate" value={pct(k.occupancyRate)} note="Occupied units" />
+        <KpiCard label="Net Income" value={money(pnl.totals.netIncome)} note="All-time revenue − expenses" />
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[1.35fr_.9fr]">
