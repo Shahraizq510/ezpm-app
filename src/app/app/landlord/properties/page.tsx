@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { TopBar } from "@/components/TopBar";
 import { demo } from "@/lib/mockData";
 
@@ -17,9 +18,14 @@ export default function PropertiesPage() {
           const occupied = units.filter((u) => u.status !== "Vacant").length;
           const total = Math.max(1, units.length);
           const occupancyPct = occupied / total;
+          const slug = demo.getPropertySlug(p);
 
           return (
-            <div key={p.id} className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5">
+            <Link
+              key={p.id}
+              href={`/app/landlord/properties/${slug}`}
+              className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5 hover:bg-white/[0.08] transition block"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-lg font-extrabold truncate">{p.name}</div>
@@ -50,7 +56,7 @@ export default function PropertiesPage() {
                   </div>
                 )}
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>

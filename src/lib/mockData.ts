@@ -408,6 +408,39 @@ export const demo = {
     return this.documents.filter((d) => d.category === category);
   },
 
+  getPropertyBySlug(slug: string): Property | undefined {
+    return this.properties.find(p => p.id === `p_${slug}`);
+  },
+
+  getPropertySlug(property: Property): string {
+    return property.id.replace(/^p_/, '');
+  },
+
+  getRevenueByProperty(propertyId: string) {
+    const propertyUnits = this.units.filter(u => u.propertyId === propertyId);
+    const unitIds = propertyUnits.map(u => u.id);
+    const propertyLeases = this.leases.filter(l => unitIds.includes(l.unitId));
+    const leaseIds = propertyLeases.map(l => l.id);
+    const propertyPayments = this.payments.filter(p => leaseIds.includes(p.leaseId));
+
+    const totalRevenue = propertyPayments.reduce((s, p) => s + p.amount, 0);
+    const expenses = this.getExpensesByProperty(propertyId);
+    const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
+
+    return {
+      payments: propertyPayments,
+      totalRevenue,
+      expenses,
+      totalExpenses,
+      netIncome: totalRevenue - totalExpenses,
+    };
+  },
+
+  getInvitesByProperty(propertyId: string) {
+    const propertyUnitIds = this.units.filter(u => u.propertyId === propertyId).map(u => u.id);
+    return this.invites.filter(i => propertyUnitIds.includes(i.unitId));
+  },
+
   getPnL() {
     const totalRevenue = this.payments.reduce((s, p) => s + p.amount, 0);
     const totalExpenses = this.expenses.reduce((s, e) => s + e.amount, 0);
