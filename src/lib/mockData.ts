@@ -62,6 +62,19 @@ export type ActivityEvent = {
   detail: string;
 };
 
+export type InviteStatus = "pending" | "opened" | "completed";
+
+export type TenantInvite = {
+  id: string;
+  unitId: string;
+  tenantName: string;
+  email: string;
+  phone?: string;
+  inviteUrl: string;
+  status: InviteStatus;
+  sentAt: string; // ISO
+};
+
 export const asOf = new Date("2026-03-29T12:00:00Z");
 
 function toISO(d: Date) {
@@ -334,6 +347,26 @@ export const demo = {
 
   getExpensesByProperty(propertyId: string) {
     return this.expenses.filter((e) => e.propertyId === propertyId);
+  },
+
+  invites: [
+    {
+      id: "inv_001",
+      unitId: "u_1534",
+      tenantName: "Rushin Contractor",
+      email: "rushin@example.com",
+      inviteUrl: "https://ezpm.app/onboard/inv-a3k9x2",
+      status: "pending",
+      sentAt: "2026-03-26T10:00:00Z",
+    },
+  ] satisfies TenantInvite[],
+
+  getInvites() {
+    return this.invites;
+  },
+
+  getVacantUnits() {
+    return this.units.filter((u) => !this.leases.some((l) => l.unitId === u.id));
   },
 
   getPnL() {

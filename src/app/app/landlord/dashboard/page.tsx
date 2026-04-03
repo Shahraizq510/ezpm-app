@@ -1,13 +1,22 @@
+"use client";
+
+import { useState } from "react";
 import { TopBar } from "@/components/TopBar";
 import { KpiCard } from "@/components/KpiCard";
 import { StatusPill } from "@/components/StatusPill";
+import { InviteTenantModal } from "@/components/InviteTenantModal";
 import { demo } from "@/lib/mockData";
 import { money, pct, timeAgo } from "@/lib/ui";
 
 export default function LandlordDashboardPage() {
+  const [inviteOpen, setInviteOpen] = useState(false);
+
   const k = demo.getKpis();
   const cards = demo.getUnitCards();
   const pnl = demo.getPnL();
+  const invites = demo.getInvites();
+  const pendingInvites = invites.filter((i) => i.status === "pending");
+  const vacantUnits = demo.getVacantUnits();
 
   return (
     <div className="grid gap-6">
@@ -82,7 +91,10 @@ export default function LandlordDashboardPage() {
             <div className="font-extrabold">Add Property</div>
             <div className="mt-1 text-sm text-white/65">Create a property and add units.</div>
           </button>
-          <button className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left hover:bg-white/10">
+          <button
+            onClick={() => setInviteOpen(true)}
+            className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left hover:bg-white/10"
+          >
             <div className="font-extrabold">Invite Tenant</div>
             <div className="mt-1 text-sm text-white/65">Send tenant onboarding link.</div>
           </button>
@@ -92,6 +104,46 @@ export default function LandlordDashboardPage() {
           </button>
         </div>
       </section>
+
+      {/* Pending Invites */}
+      {pendingInvites.length > 0 && (
+        <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5">
+          <div className="text-xs uppercase tracking-[0.18em] text-white/55 font-semibold">Pending Invites</div>
+          <div className="mt-1 text-base font-extrabold">Awaiting tenant response</div>
+
+          <div className="mt-4 grid gap-2">
+            {pendingInvites.map((inv) => {
+              const unit = demo.units.find((u) => u.id === inv.unitId);
+              return (
+                <div
+                  key={inv.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <div className="font-bold">{inv.tenantName}</div>
+                    <div className="text-sm text-white/60 truncate">
+                      Unit {unit?.label ?? "?"} • {inv.email}
+                    </div>
+                    <div className="mt-1 text-xs text-white/55">
+                      Sent {new Date(inv.sentAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <span className="rounded-full border border-amber-300/20 bg-amber-300/10 text-amber-200 px-2.5 py-1 text-xs font-bold">
+                    Pending
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Invite Tenant Modal */}
+      <InviteTenantModal
+        open={inviteOpen}
+        onClose={() => setInviteOpen(false)}
+        vacantUnits={vacantUnits}
+      />
     </div>
   );
 }
