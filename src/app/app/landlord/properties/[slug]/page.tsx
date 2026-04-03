@@ -190,9 +190,10 @@ export default function PropertyDetailPage({
             </div>
             <div className="p-3 grid gap-2">
               {unitCards.map((u) => (
-                <div
+                <Link
                   key={u.unitId}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-4 py-3"
+                  href={`/app/landlord/units/${u.unitId}`}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-4 py-3 hover:bg-white/[0.08] transition"
                 >
                   <div className="min-w-0">
                     <div className="font-bold">Unit {u.label}</div>
@@ -203,7 +204,7 @@ export default function PropertyDetailPage({
                     <div className="mt-1 text-xs text-white/55">{u.note}</div>
                   </div>
                   <StatusPill status={u.status} />
-                </div>
+                </Link>
               ))}
             </div>
           </section>
