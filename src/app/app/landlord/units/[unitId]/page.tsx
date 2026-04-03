@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { use, useState } from "react";
+import { use, useState, useRef } from "react";
 import { StatusPill } from "@/components/StatusPill";
 import { demo } from "@/lib/mockData";
+import type { DocCategory, PropertyDocument } from "@/lib/mockData";
 import { money, fileSize } from "@/lib/ui";
 
 type Tab = "overview" | "payments" | "expenses" | "documents";
@@ -51,6 +52,14 @@ export default function UnitDetailPage({
 }) {
   const { unitId } = use(params);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadedDocs, setUploadedDocs] = useState<PropertyDocument[]>([]);
+  const [uploadCategory, setUploadCategory] = useState<DocCategory>("Receipt");
+  const [uploadName, setUploadName] = useState("");
+  const [uploadDesc, setUploadDesc] = useState("");
+  const [uploadFile, setUploadFile] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const unit = demo.getUnitById(unitId);
 
@@ -330,14 +339,22 @@ export default function UnitDetailPage({
       {/* ===== DOCUMENTS ===== */}
       {activeTab === "documents" && (
         <>
-          <div className="text-sm text-white/60">
-            {documents.length} document{documents.length !== 1 ? "s" : ""} related to this unit
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-white/60">
+              {documents.length + uploadedDocs.length} document{documents.length + uploadedDocs.length !== 1 ? "s" : ""} related to this unit
+            </div>
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="rounded-xl bg-gradient-to-br from-blue-500/20 to-violet-500/20 border border-white/10 px-4 py-2 text-sm font-bold hover:from-blue-500/30 hover:to-violet-500/30 transition"
+            >
+              Upload Document
+            </button>
           </div>
 
           <div className="grid gap-3">
-            {documents.length === 0 ? (
+            {documents.length + uploadedDocs.length === 0 ? (
               <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-8 text-center text-white/60">
-                No documents found for this unit. Check the{" "}
+                No documents found for this unit. Upload one or check the{" "}
                 <Link
                   href={`/app/landlord/properties/${property ? demo.getPropertySlug(property) : ""}`}
                   className="text-blue-400 hover:text-blue-300"
@@ -347,7 +364,7 @@ export default function UnitDetailPage({
                 for shared files.
               </div>
             ) : (
-              documents.map((doc) => (
+              [...uploadedDocs, ...documents].map((doc) => (
                 <div
                   key={doc.id}
                   className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-4 flex items-start justify-between gap-4"
@@ -381,6 +398,118 @@ export default function UnitDetailPage({
               ))
             )}
           </div>
+
+          {/* Upload Modal */}
+          {showUploadModal && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+              onClick={() => { setShowUploadModal(false); setUploadSuccess(false); }}
+            >
+              <div
+                className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0a0a0a] p-6 mx-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {uploadSuccess ? (
+                  <div className="text-center py-6">
+                    <div className="text-4xl mb-3">✅</div>
+                    <div className="text-lg font-extrabold">Document uploaded</div>
+                    <div className="text-sm text-white/60 mt-1">Added to Unit {unit?.label}</div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-lg font-extrabold mb-4">Upload to Unit {unit?.label}</div>
+
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="rounded-2xl border-2 border-dashed border-white/20 bg-white/[0.02] hover:border-white/30 hover:bg-white/[0.04] transition p-8 text-center cursor-pointer mb-4"
+                    >
+                      <div className="text-3xl mb-2">📁</div>
+                      <div className="text-sm text-white/60">
+                        {uploadFile || "Drop files here or click to browse"}
+                      </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        className="hidden"
+                        onChange={(e) => setUploadFile(e.target.files?.[0]?.name ?? "")}
+                      />
+                    </div>
+
+                    <div className="grid gap-3">
+                      <div>
+                        <label className="text-xs uppercase tracking-[0.18em] text-white/55 font-semibold block mb-1">Category</label>
+                        <select
+                          value={uploadCategory}
+                          onChange={(e) => setUploadCategory(e.target.value as DocCategory)}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white"
+                        >
+                          {["Bill", "Invoice", "Receipt", "Insurance", "Tax", "Permit", "Inspection", "Lease", "Other"].map((c) => (
+                            <option key={c} value={c} className="bg-[#111]">{c}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs uppercase tracking-[0.18em] text-white/55 font-semibold block mb-1">Document Name</label>
+                        <input
+                          type="text"
+                          value={uploadName}
+                          onChange={(e) => setUploadName(e.target.value)}
+                          placeholder="e.g. Plumbing receipt March 2026"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-white/40"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs uppercase tracking-[0.18em] text-white/55 font-semibold block mb-1">Description (optional)</label>
+                        <input
+                          type="text"
+                          value={uploadDesc}
+                          onChange={(e) => setUploadDesc(e.target.value)}
+                          placeholder="Notes about this document"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-white/40"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 mt-5">
+                      <button
+                        onClick={() => {
+                          const newDoc: PropertyDocument = {
+                            id: `doc_upload_${Date.now()}`,
+                            propertyId: unit?.propertyId ?? "",
+                            category: uploadCategory,
+                            name: uploadName || uploadFile || "Untitled",
+                            description: uploadDesc || undefined,
+                            uploadedAt: new Date().toISOString(),
+                            fileType: uploadFile.split(".").pop() ?? "pdf",
+                            fileSize: Math.floor(Math.random() * 500000) + 50000,
+                          };
+                          setUploadedDocs((prev) => [newDoc, ...prev]);
+                          setUploadSuccess(true);
+                          setTimeout(() => {
+                            setShowUploadModal(false);
+                            setUploadSuccess(false);
+                            setUploadCategory("Receipt");
+                            setUploadName("");
+                            setUploadDesc("");
+                            setUploadFile("");
+                          }, 1500);
+                        }}
+                        className="flex-1 rounded-xl bg-gradient-to-br from-blue-500/20 to-violet-500/20 border border-white/10 px-4 py-2.5 text-sm font-bold hover:from-blue-500/30 hover:to-violet-500/30 transition"
+                      >
+                        Upload
+                      </button>
+                      <button
+                        onClick={() => setShowUploadModal(false)}
+                        className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-bold hover:bg-white/10 transition"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
