@@ -136,7 +136,7 @@ export const demo = {
     {
       id: "l_1532",
       unitId: "u_1532",
-      tenantName: "Tenant (Quarterly)",
+      tenantName: "YanYan Wang",
       rent: 3000,
       cadence: "quarterly",
       startDate: "2024-06-01T00:00:00Z",
@@ -145,7 +145,7 @@ export const demo = {
     {
       id: "l_1532a",
       unitId: "u_1532a",
-      tenantName: "Tenant (Monthly)",
+      tenantName: "Anna Wolfe",
       rent: 1600,
       cadence: "monthly",
       startDate: "2026-02-01T00:00:00Z",
@@ -192,21 +192,21 @@ export const demo = {
       ts: toISO(new Date(asOf.getTime() - 1000 * 60 * 60 * 30)),
       type: "payment",
       title: "Rent received",
-      detail: "1532A Woolsey • March paid via ACH ($1,600).",
+      detail: "Anna Wolfe • 1532A Woolsey • March paid via ACH ($1,600).",
     },
     {
       id: "a_2",
       ts: toISO(new Date(asOf.getTime() - 1000 * 60 * 60 * 24 * 3)),
       type: "vacancy",
-      title: "Vacancy needs attention",
-      detail: "1534 Woolsey is vacant — post listing + schedule showings.",
+      title: "Lease sent — pending signature",
+      detail: "1534 Woolsey — lease sent to Rushin Contractor, pending signature.",
     },
     {
       id: "a_3",
       ts: "2025-06-01T18:20:00Z",
       type: "payment",
       title: "Quarterly rent received",
-      detail: "1532 Woolsey paid for Jun–Aug 2025 ($9,000).",
+      detail: "YanYan Wang • 1532 Woolsey paid for Jun–Aug 2025 ($9,000).",
     },
   ] satisfies ActivityEvent[],
 
@@ -266,7 +266,7 @@ export const demo = {
           rent: 0,
           cadence: undefined as Cadence | undefined,
           status: "Vacant" as UnitStatus,
-          note: "Vacant — needs tenant",
+          note: "Lease pending — Rushin Contractor",
         };
       }
 
